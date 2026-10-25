@@ -15,11 +15,17 @@ jobs:
           $installer = "$env:TEMP\chromeremotedesktophost.msi"
           Invoke-WebRequest -Uri "https://dl.google.com/edgedl/chrome-remote-desktop/chromeremotedesktophost.msi" -OutFile $installer
           Start-Process msiexec.exe -Wait -ArgumentList "/i $installer /qn"
+          Start-Sleep -Seconds 5
 
       - name: Start Host
         shell: powershell
         run: |
-          & "${Env:PROGRAMFILES(X86)}\Google\Chrome Remote Desktop\CurrentVersion\remoting_start_host.exe" --code="4/0AXlqoi5aqNjtF-jzg0h1YIGVhuEIUdfXiRQAr0e47CkERrdEDx3xLrJTaVHelzTpCVLShw" --redirect-url="https://remotedesktop.google.com/_/oauthredirect" --name=$Env:COMPUTERNAME --pin=123456
+          $exe = (Get-ChildItem -Path "C:\Program Files*", "C:\ProgramData" -Filter "remoting_start_host.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
+          if (-not $exe) {
+              $exe = "${Env:PROGRAMFILES(X86)}\Google\Chrome Remote Desktop\CurrentVersion\remoting_start_host.exe"
+          }
+          Write-Host "Found host executable at: $exe"
+          & "$exe" --code="আপনার_নতুন_কোড" --redirect-url="https://remotedesktop.google.com/_/oauthredirect" --name=$Env:COMPUTERNAME --pin=123456
 
       - name: Keep Alive (6 Hours)
         shell: powershell
